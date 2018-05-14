@@ -6,7 +6,6 @@ var bscript = require('../src/script')
 var btemplates = require('../src/templates')
 var ops = require('bitcoin-ops')
 
-var BigInteger = require('bigi')
 var ECPair = require('../src/ecpair')
 var Transaction = require('../src/transaction')
 var TransactionBuilder = require('../src/transaction_builder')
@@ -83,7 +82,7 @@ function construct (f, dontSign) {
 
 describe('TransactionBuilder', function () {
   // constants
-  var keyPair = new ECPair(BigInteger.ONE)
+  var keyPair = ECPair.fromPrivateKey(Buffer.from('0000000000000000000000000000000000000000000000000000000000000001', 'hex'))
   var scripts = [
     '1BgGZ9tcN4rm9KBzDn7KprQz87SZ26SAMH',
     '1cMh228HTCiwS8ZsaakH8A8wze1JR5ZsP'
