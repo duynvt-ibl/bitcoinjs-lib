@@ -2,6 +2,7 @@
 
 var assert = require('assert')
 var baddress = require('../src/address')
+let bcrypto = require('../src/crypto')
 var bscript = require('../src/script')
 var btemplates = require('../src/templates')
 var ops = require('bitcoin-ops')
@@ -219,7 +220,8 @@ describe('TransactionBuilder', function () {
     })
 
     it('accepts an address string and value', function () {
-      var vout = txb.addOutput(keyPair.getAddress(), 1000)
+      let address = btemplates.pubKeyHash.output.encode(bcrypto.hash160(keyPair.getPublicKey()))
+      var vout = txb.addOutput(address, 1000)
       assert.strictEqual(vout, 0)
 
       var txout = txb.__tx.outs[0]
