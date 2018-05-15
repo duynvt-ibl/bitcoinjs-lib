@@ -1,50 +1,42 @@
-var bip66 = require('bip66')
-var BigInteger = require('bigi')
-var Buffer = require('safe-buffer').Buffer
-var typeforce = require('typeforce')
-var types = require('./types')
+let bip66 = require('bip66')
+let Buffer = require('safe-buffer').Buffer
+
+let ZERO = Buffer.alloc(1, 0)
+function toDER (x) {
+  if (x[0] & 0x80) return Buffer.concat([ZERO, x], x.length + 1)
+  return x
+}
+
+function fromDER (x) {
+  let buffer = Buffer.alloc(32, 0)
+  let xstart = Math.max(0, x.length - 32)
+  x.copy(buffer, 0, xstart)
+  return buffer
+}
 
 // BIP62: 1 byte hashType flag (only 0x01, 0x02, 0x03, 0x81, 0x82 and 0x83 are allowed)
 function decode (buffer) {
-  var hashType = buffer.readUInt8(buffer.length - 1)
-  var hashTypeMod = hashType & ~0x80
+  let hashType = buffer.readUInt8(buffer.length - 1)
+  let hashTypeMod = hashType & ~0x80
   if (hashTypeMod <= 0 || hashTypeMod >= 4) throw new Error('Invalid hashType ' + hashType)
 
-  var decode = bip66.decode(buffer.slice(0, -1))
+  let decode = bip66.decode(buffer.slice(0, -1))
 
   return {
-    signature: {
-      r: BigInteger.fromDERInteger(decode.r),
-      s: BigInteger.fromDERInteger(decode.s)
-    },
+    signature: Buffer.concat([fromDER(decode.r), fromDER(decode.s)], 64),
     hashType: hashType
   }
 }
 
-function toRSBuffer (signature, buffer, offset) {
-  buffer = buffer || Buffer.alloc(64)
-  signature.r.toBuffer(32).copy(buffer, offset)
-  signature.s.toBuffer(32).copy(buffer, offset + 32)
-  return buffer
-}
-
-function fromRSBuffer (buffer) {
-  typeforce(types.BufferN(64), buffer)
-
-  var r = BigInteger.fromBuffer(buffer.slice(0, 32))
-  var s = BigInteger.fromBuffer(buffer.slice(32, 64))
-  return { r: r, s: s }
-}
-
 function encode (signature, hashType) {
-  var hashTypeMod = hashType & ~0x80
+  let hashTypeMod = hashType & ~0x80
   if (hashTypeMod <= 0 || hashTypeMod >= 4) throw new Error('Invalid hashType ' + hashType)
 
-  var hashTypeBuffer = Buffer.allocUnsafe(1)
+  let hashTypeBuffer = Buffer.allocUnsafe(1)
   hashTypeBuffer.writeUInt8(hashType, 0)
 
-  var r = Buffer.from(signature.r.toDERInteger())
-  var s = Buffer.from(signature.s.toDERInteger())
+  let r = toDER(signature.slice(0, 32))
+  let s = toDER(signature.slice(32, 64))
 
   return Buffer.concat([
     bip66.encode(r, s),
@@ -53,8 +45,6 @@ function encode (signature, hashType) {
 }
 
 module.exports = {
-  fromRSBuffer: fromRSBuffer,
-  toRSBuffer: toRSBuffer,
   decode: decode,
   encode: encode
 }
