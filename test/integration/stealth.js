@@ -1,67 +1,66 @@
 /* global describe, it */
 
 var assert = require('assert')
-var bigi = require('bigi')
 var bitcoin = require('../../')
 
-var ecurve = require('ecurve')
-var secp256k1 = ecurve.getCurveByName('secp256k1')
-var G = secp256k1.G
-var n = secp256k1.n
+var ecc = require('tiny-secp256k1')
 
 // vG = (dG \+ sha256(e * dG)G)
 function stealthSend (e, Q) {
-  var eQ = Q.multiply(e) // shared secret
-  var c = bigi.fromBuffer(bitcoin.crypto.sha256(eQ.getEncoded()))
-  var cG = G.multiply(c)
-  var vG = new bitcoin.ECPair(null, Q.add(cG))
+  var eQ = ecc.pointMultiply(Q, e) // shared secret
+  var c = bitcoin.crypto.sha256(eQ)
+  var Qc = ecc.pointAddScalar(Q, c)
+  var vG = bitcoin.ECPair.fromPublicKey(Qc)
 
   return vG
 }
 
 // v = (d + sha256(eG * d))
 function stealthReceive (d, eG) {
-  var eQ = eG.multiply(d) // shared secret
-  var c = bigi.fromBuffer(bitcoin.crypto.sha256(eQ.getEncoded()))
-  var v = new bitcoin.ECPair(d.add(c).mod(n))
+  var eQ = ecc.pointMultiply(eG, d) // shared secret
+  var c = bitcoin.crypto.sha256(eQ)
+  var dc = ecc.privateAdd(d, c)
+  var v = bitcoin.ECPair.fromPrivateKey(dc)
 
   return v
 }
 
 // d = (v - sha256(e * dG))
 function stealthRecoverLeaked (v, e, Q) {
-  var eQ = Q.multiply(e) // shared secret
-  var c = bigi.fromBuffer(bitcoin.crypto.sha256(eQ.getEncoded()))
-  var d = new bitcoin.ECPair(v.subtract(c).mod(n))
+  var eQ = ecc.pointMultiply(Q, e) // shared secret
+  var c = bitcoin.crypto.sha256(eQ)
+  var vc = ecc.privateSub(v, c)
+  var d = bitcoin.ECPair.fromPrivateKey(vc)
 
   return d
 }
 
 // vG = (rG \+ sha256(e * dG)G)
 function stealthDualSend (e, R, Q) {
-  var eQ = Q.multiply(e) // shared secret
-  var c = bigi.fromBuffer(bitcoin.crypto.sha256(eQ.getEncoded()))
-  var cG = G.multiply(c)
-  var vG = new bitcoin.ECPair(null, R.add(cG))
+  var eQ = ecc.pointMultiply(Q, e) // shared secret
+  var c = bitcoin.crypto.sha256(eQ)
+  var Rc = ecc.pointAddScalar(R, c)
+  var vG = bitcoin.ECPair.fromPublicKey(Rc)
 
   return vG
 }
 
 // vG = (rG \+ sha256(eG * d)G)
 function stealthDualScan (d, R, eG) {
-  var eQ = eG.multiply(d) // shared secret
-  var c = bigi.fromBuffer(bitcoin.crypto.sha256(eQ.getEncoded()))
-  var cG = G.multiply(c)
-  var vG = new bitcoin.ECPair(null, R.add(cG))
+  var eQ = ecc.pointMultiply(eG, d) // shared secret
+  var c = bitcoin.crypto.sha256(eQ)
+  var Rc = ecc.pointAddScalar(R, c)
+  var vG = bitcoin.ECPair.fromPublicKey(Rc)
 
   return vG
 }
 
 // v = (r + sha256(eG * d))
 function stealthDualReceive (d, r, eG) {
-  var eQ = eG.multiply(d) // shared secret
-  var c = bigi.fromBuffer(bitcoin.crypto.sha256(eQ.getEncoded()))
-  var v = new bitcoin.ECPair(r.add(c).mod(n))
+  var eQ = ecc.pointMultiply(eG, d) // shared secret
+  var c = bitcoin.crypto.sha256(eQ)
+  var rc = ecc.privateAdd(r, c)
+  var v = bitcoin.ECPair.fromPrivateKey(rc)
 
   return v
 }

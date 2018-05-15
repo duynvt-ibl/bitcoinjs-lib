@@ -55,7 +55,7 @@ describe('ECPair', function () {
           compressed: f.compressed
         })
 
-        assert.strictEqual(keyPair.getPublicKeyBuffer().toString('hex'), f.Q)
+        assert.strictEqual(keyPair.getPublicKey().toString('hex'), f.Q)
       })
     })
 
@@ -76,7 +76,7 @@ describe('ECPair', function () {
     })
   })
 
-  describe('getPublicKeyBuffer', function () {
+  describe('getPublicKey', function () {
     let keyPair
 
     beforeEach(function () {
@@ -85,7 +85,7 @@ describe('ECPair', function () {
 
     it('calls pointFromScalar lazily', hoodwink(function () {
       assert.strictEqual(keyPair.__Q, undefined)
-      keyPair.getPublicKeyBuffer()
+      keyPair.getPublicKey()
       assert.strictEqual(keyPair.__Q.toString('hex'), '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798')
     }))
   })
@@ -96,7 +96,7 @@ describe('ECPair', function () {
         let network = NETWORKS[f.network]
         let keyPair = ECPair.fromWIF(f.WIF, network)
 
-        assert.strictEqual(keyPair.getPrivateKeyBuffer().toString('hex'), f.d)
+        assert.strictEqual(keyPair.getPrivateKey().toString('hex'), f.d)
         assert.strictEqual(keyPair.compressed, f.compressed)
         assert.strictEqual(keyPair.network, network)
       })
@@ -106,7 +106,7 @@ describe('ECPair', function () {
       it('imports ' + f.WIF + ' (via list of networks)', function () {
         let keyPair = ECPair.fromWIF(f.WIF, NETWORKS_LIST)
 
-        assert.strictEqual(keyPair.getPrivateKeyBuffer().toString('hex'), f.d)
+        assert.strictEqual(keyPair.getPrivateKey().toString('hex'), f.d)
         assert.strictEqual(keyPair.compressed, f.compressed)
         assert.strictEqual(keyPair.network, NETWORKS[f.network])
       })
@@ -226,7 +226,7 @@ describe('ECPair', function () {
       it('wraps tinysecp.sign', hoodwink(function () {
         this.mock(tinysecp, 'sign', function (h, d) {
           assert.strictEqual(h, hash)
-          assert.strictEqual(d, keyPair.getPrivateKeyBuffer())
+          assert.strictEqual(d, keyPair.getPrivateKey())
         }, 1)
 
         keyPair.sign(hash)

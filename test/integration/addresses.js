@@ -1,7 +1,6 @@
 /* global describe, it */
 
 var assert = require('assert')
-var bigi = require('bigi')
 var bitcoin = require('../../')
 var dhttp = require('dhttp/200')
 
@@ -18,9 +17,8 @@ describe('bitcoinjs-lib (addresses)', function () {
 
   it('can generate an address from a SHA256 hash', function () {
     var hash = bitcoin.crypto.sha256(Buffer.from('correct horse battery staple'))
-    var d = bigi.fromBuffer(hash)
 
-    var keyPair = new bitcoin.ECPair(d)
+    var keyPair = bitcoin.ECPair.fromPrivateKey(hash)
     var address = keyPair.getAddress()
     // Generating addresses from SHA256 hashes is not secure if the input to the hash function is predictable
     // Do not use with predictable inputs

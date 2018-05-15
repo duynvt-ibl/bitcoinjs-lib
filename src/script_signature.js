@@ -4,7 +4,10 @@ let Buffer = require('safe-buffer').Buffer
 let ZERO = Buffer.alloc(1, 0)
 function toDER (x) {
   if (x[0] & 0x80) return Buffer.concat([ZERO, x], x.length + 1)
-  return x
+  let i = 0
+  while (x[i] === 0) ++i
+  if (i === x.length) --i
+  return x.slice(i)
 }
 
 function fromDER (x) {
@@ -37,6 +40,8 @@ function encode (signature, hashType) {
 
   let r = toDER(signature.slice(0, 32))
   let s = toDER(signature.slice(32, 64))
+  console.log(r)
+  console.log(s)
 
   return Buffer.concat([
     bip66.encode(r, s),
