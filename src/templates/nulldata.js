@@ -14,15 +14,15 @@ function check (script) {
 check.toJSON = function () { return 'null data output' }
 
 function encode (data) {
-  typeforce([types.Buffer], data)
+  typeforce(types.Buffer, data)
 
-  return bscript.compile([OPS.OP_RETURN].concat(data))
+  return bscript.compile([OPS.OP_RETURN, data])
 }
 
 function decode (buffer) {
   typeforce(check, buffer)
 
-  return bscript.decompile(buffer).slice(1)
+  return buffer.slice(2)
 }
 
 module.exports = {

@@ -206,7 +206,6 @@ module.exports = {
   toStack: toStack,
 
   number: require('./script_number'),
-  signature: require('./script_signature'),
 
   isCanonicalPubKey: isCanonicalPubKey,
   isCanonicalSignature: isCanonicalSignature,

@@ -1,3 +1,6 @@
+var pushdata = require('pushdata-bitcoin')
+var varuint = require('varuint-bitcoin')
+
 // https://github.com/feross/buffer/blob/master/index.js#L1127
 function verifuint (value, max) {
   if (typeof value !== 'number') throw new Error('cannot write a non-number as a number')
@@ -12,6 +15,7 @@ function readUInt64LE (buffer, offset) {
   b *= 0x100000000
 
   verifuint(b + a, 0x001fffffffffffff)
+
   return b + a
 }
 
@@ -23,7 +27,30 @@ function writeUInt64LE (buffer, value, offset) {
   return offset + 8
 }
 
+// TODO: remove in 4.0.0?
+function readVarInt (buffer, offset) {
+  var result = varuint.decode(buffer, offset)
+
+  return {
+    number: result,
+    size: varuint.decode.bytes
+  }
+}
+
+// TODO: remove in 4.0.0?
+function writeVarInt (buffer, number, offset) {
+  varuint.encode(number, buffer, offset)
+  return varuint.encode.bytes
+}
+
 module.exports = {
+  pushDataSize: pushdata.encodingLength,
+  readPushDataInt: pushdata.decode,
   readUInt64LE: readUInt64LE,
-  writeUInt64LE: writeUInt64LE
+  readVarInt: readVarInt,
+  varIntBuffer: varuint.encode,
+  varIntSize: varuint.encodingLength,
+  writePushDataInt: pushdata.encode,
+  writeUInt64LE: writeUInt64LE,
+  writeVarInt: writeVarInt
 }

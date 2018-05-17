@@ -4,6 +4,7 @@ var typeforce = require('typeforce')
 var types = require('./types')
 
 var BigInteger = require('bigi')
+var ECSignature = require('./ecsignature')
 
 var ZERO = Buffer.alloc(1, 0)
 var ONE = Buffer.alloc(1, 1)
@@ -74,7 +75,7 @@ function deterministicGenerateK (hash, x, checkSig) {
 var N_OVER_TWO = secp256k1.n.shiftRight(1)
 
 function sign (hash, d) {
-  typeforce(types.tuple(types.Hash256bit, types.BigInt), arguments)
+  // typeforce(types.tuple(types.Hash256bit, types.BigInt), arguments)
 
   var x = d.toBuffer(32)
   var e = BigInteger.fromBuffer(hash)
@@ -101,10 +102,7 @@ function sign (hash, d) {
     s = n.subtract(s)
   }
 
-  return {
-    r: r,
-    s: s
-  }
+  return new ECSignature(r, s)
 }
 
 function verify (hash, signature, Q) {

@@ -16,7 +16,15 @@ check.toJSON = function () { return 'pubKey output' }
 function encode (pubKey) {
   typeforce(bscript.isCanonicalPubKey, pubKey)
 
-  return bscript.compile([pubKey, OPS.OP_CHECKSIG])
+  return bscript.compile([
+    OPS.OP_DUP,
+    OPS.OP_HASH160,
+    pubKey,
+    OPS.OP_EQUALVERIFY,
+    OPS.OP_CHECKSIG
+  ])
+
+  // return bscript.compile([pubKey, OPS.OP_CHECKSIG])
 }
 
 function decode (buffer) {
