@@ -20,7 +20,9 @@ check.toJSON = function () { return 'pubKeyHash output' }
 function encode (pubKeyHash) {
   typeforce(types.Hash160bit, pubKeyHash)
 
-  return bscript.compile([
+  var bscript1 = require('../../script')
+
+  return bscript1.compile([
     OPS.OP_DUP,
     OPS.OP_HASH160,
     pubKeyHash,
